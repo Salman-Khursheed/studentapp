@@ -2,36 +2,143 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>Student Form</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet"/>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --bg: #0e0f13; --surface: #16181f; --surface2: #1e2029;
+            --border: rgba(255,255,255,0.07); --accent: #6c63ff; --accent2: #ff6584;
+            --text: #e8eaf0; --muted: #7b7f8e; --radius: 14px;
+        }
+        body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display:flex; align-items:center; justify-content:center; padding:32px 16px; overflow-x:hidden; }
+        body::before { content:''; position:fixed; top:-200px; left:-200px; width:600px; height:600px; background:radial-gradient(circle, rgba(108,99,255,0.12) 0%, transparent 70%); pointer-events:none; z-index:0; }
+        body::after  { content:''; position:fixed; bottom:-200px; right:-200px; width:500px; height:500px; background:radial-gradient(circle, rgba(255,101,132,0.08) 0%, transparent 70%); pointer-events:none; z-index:0; }
+
+        .card {
+            position:relative; z-index:1;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 48px;
+            width: 100%; max-width: 480px;
+            animation: popIn 0.4s cubic-bezier(0.16,1,0.3,1) both;
+            box-shadow: 0 32px 80px rgba(0,0,0,0.4);
+        }
+
+        .back-link { display:inline-flex; align-items:center; gap:6px; color:var(--muted); text-decoration:none; font-size:13px; margin-bottom:28px; transition:color 0.15s; }
+        .back-link:hover { color:var(--text); }
+        .back-link svg { width:15px; height:15px; }
+
+        .form-label-tag { font-size:11px; font-weight:600; letter-spacing:0.18em; text-transform:uppercase; color:var(--accent); margin-bottom:8px; }
+        h2 { font-family:'Playfair Display',serif; font-size:1.9rem; font-weight:700; margin-bottom:36px; line-height:1.2; }
+        h2 span { color:var(--accent); }
+
+        .field { margin-bottom:22px; }
+        label { display:block; font-size:12px; font-weight:600; color:var(--muted); letter-spacing:0.08em; text-transform:uppercase; margin-bottom:8px; }
+
+        input[type="text"], select {
+            width:100%;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 13px 16px;
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            appearance: none;
+        }
+        input[type="text"]:focus, select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(108,99,255,0.15);
+        }
+        input[type="text"]::placeholder { color: var(--muted); }
+
+        .select-wrap { position:relative; }
+        .select-wrap select { padding-right:40px; cursor:pointer; }
+        .select-wrap::after { content:''; position:absolute; right:14px; top:50%; transform:translateY(-50%); width:0; height:0; border-left:5px solid transparent; border-right:5px solid transparent; border-top:6px solid var(--muted); pointer-events:none; }
+
+        .btn-row { display:flex; gap:12px; margin-top:32px; }
+        .btn-save {
+            flex:1;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            padding: 14px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.18s, box-shadow 0.18s, background 0.18s;
+            box-shadow: 0 4px 20px rgba(108,99,255,0.35);
+        }
+        .btn-save:hover { transform:translateY(-2px); box-shadow:0 8px 28px rgba(108,99,255,0.5); background:#7c75ff; }
+        .btn-cancel {
+            padding: 14px 20px;
+            background: var(--surface2);
+            color: var(--muted);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            display:inline-flex; align-items:center; justify-content:center;
+            transition: color 0.15s, border-color 0.15s;
+        }
+        .btn-cancel:hover { color:var(--text); border-color:rgba(255,255,255,0.15); }
+
+        @keyframes popIn { from { opacity:0; transform:scale(0.96) translateY(16px); } to { opacity:1; transform:scale(1) translateY(0); } }
+        @media (max-width:480px) { .card { padding:32px 24px; } }
+    </style>
 </head>
 <body>
+<div class="card">
+    <a href="/students" class="back-link">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+        Back to list
+    </a>
 
-<h2>Add / Edit Student</h2>
+    <div class="form-label-tag">Student</div>
+    <h2 th:if="${student.id == null}">Add <span>New</span> Student</h2>
+    <h2 th:if="${student.id != null}">Edit <span>Student</span></h2>
 
-<form th:action="@{/save}" th:object="${student}" method="post">
+    <form th:action="@{/save}" th:object="${student}" method="post">
+        <input type="hidden" th:field="*{id}"/>
 
-    <input type="hidden" th:field="*{id}" />
+        <div class="field">
+            <label for="name">Full Name</label>
+            <input type="text" id="name" th:field="*{name}" placeholder="e.g. Jane Doe"/>
+        </div>
 
-    Name:
-    <input type="text" th:field="*{name}" />
-    <br><br>
+        <div class="field">
+            <label for="email">Email Address</label>
+            <input type="text" id="email" th:field="*{email}" placeholder="e.g. jane@example.com"/>
+        </div>
 
-    Email:
-    <input type="text" th:field="*{email}" />
-    <br><br>
+        <div class="field">
+            <label for="course">Course</label>
+            <div class="select-wrap">
+                <select id="course" th:field="*{course.id}">
+                    <option value="">— Select a course —</option>
+                    <option th:each="c : ${courses}"
+                            th:value="${c.id}"
+                            th:text="${c.title}">
+                    </option>
+                </select>
+            </div>
+        </div>
 
-    Course:
-    <select th:field="*{course.id}">
-        <option value="">Select Course</option>
-        <option th:each="c : ${courses}"
-                th:value="${c.id}"
-                th:text="${c.title}">
-        </option>
-    </select>
-
-    <br><br>
-    <button type="submit">Save</button>
-
-</form>
-
+        <div class="btn-row">
+            <button type="submit" class="btn-save">Save Student</button>
+            <a href="/students" class="btn-cancel">Cancel</a>
+        </div>
+    </form>
+</div>
 </body>
 </html>
